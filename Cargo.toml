@@ -1,0 +1,4 @@
+[workspace]
+members = ["ypbank-compare","ypbank-converter","ypbank-parser"]
+
+resolver = "2"
