@@ -6,7 +6,7 @@ use std::fmt;
 pub enum TransactionType {
     Deposit,
     Transfer,
-    Withdraw,
+    Withdrawal,
 }
 
 impl fmt::Display for TransactionType {
@@ -14,7 +14,43 @@ impl fmt::Display for TransactionType {
         match self {
             TransactionType::Deposit => write!(f, "DEPOSIT"),
             TransactionType::Transfer => write!(f, "TRANSFER"),
-            TransactionType::Withdraw => write!(f, "WITHDRAW"),
+            TransactionType::Withdrawal => write!(f, "WITHDRAWAL"),
+        }
+    }
+}
+
+impl TryFrom<&str> for TransactionType {
+    type Error = ParseError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "DEPOSIT" => Ok(TransactionType::Deposit),
+            "TRANSFER" => Ok(TransactionType::Transfer),
+            "WITHDRAWAL" => Ok(TransactionType::Withdrawal),
+            _ => Err(ParseError::InvalidTransactionType(value.to_string())),
+        }
+    }
+}
+
+impl TryFrom<u8> for TransactionType {
+    type Error = ParseError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(TransactionType::Deposit),
+            1 => Ok(TransactionType::Transfer),
+            2 => Ok(TransactionType::Withdrawal),
+            _ => Err(ParseError::InvalidTransactionType(value.to_string())),
+        }
+    }
+}
+
+impl From<TransactionType> for u8 {
+    fn from(value: TransactionType) -> Self {
+        match value {
+            TransactionType::Deposit => 0,
+            TransactionType::Transfer => 1,
+            TransactionType::Withdrawal => 2,
         }
     }
 }
@@ -33,6 +69,42 @@ impl fmt::Display for TransactionStatus {
             TransactionStatus::Success => write!(f, "SUCCESS"),
             TransactionStatus::Failure => write!(f, "FAILURE"),
             TransactionStatus::Pending => write!(f, "PENDING"),
+        }
+    }
+}
+
+impl TryFrom<&str> for TransactionStatus {
+    type Error = ParseError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "SUCCESS" => Ok(TransactionStatus::Success),
+            "FAILURE" => Ok(TransactionStatus::Failure),
+            "PENDING" => Ok(TransactionStatus::Pending),
+            _ => Err(ParseError::InvalidTransactionStatus(value.to_string())),
+        }
+    }
+}
+
+impl TryFrom<u8> for TransactionStatus {
+    type Error = ParseError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(TransactionStatus::Success),
+            1 => Ok(TransactionStatus::Failure),
+            2 => Ok(TransactionStatus::Pending),
+            _ => Err(ParseError::InvalidTransactionStatus(value.to_string())),
+        }
+    }
+}
+
+impl From<TransactionStatus> for u8 {
+    fn from(value: TransactionStatus) -> u8 {
+        match value {
+            TransactionStatus::Success => 0,
+            TransactionStatus::Failure => 1,
+            TransactionStatus::Pending => 2,
         }
     }
 }

@@ -15,6 +15,9 @@ pub enum ParseError {
     #[error("Ошибка парсинга числа: {0}")]
     ParseInt(#[from] std::num::ParseIntError),
 
+    #[error("Неверный формат: {0}")]
+    InvalidFormat(String),
+
     #[error("Неверный тип транзакции: {0}")]
     InvalidTransactionType(String),
 
@@ -26,4 +29,7 @@ pub enum ParseError {
 
     #[error("Размер записи не совпадает")]
     RecordSizeMismatch,
+
+    #[error("Поле не найдено: {0}")]
+    MissingField(String),
 }
