@@ -1,6 +1,19 @@
 use crate::error::ParseError;
 use std::fmt;
 
+// Финансовая транзакция
+#[derive(Debug)]
+pub struct Transaction {
+    pub tx_id: u64,
+    pub tx_type: TransactionType,
+    pub from_user_id: u64,
+    pub to_user_id: u64,
+    pub amount: i64,
+    pub timestamp: u64,
+    pub status: TransactionStatus,
+    pub description: String,
+}
+
 // Тип финансовой транзакции
 #[derive(Debug)]
 pub enum TransactionType {
@@ -107,17 +120,4 @@ impl From<TransactionStatus> for u8 {
             TransactionStatus::Pending => 2,
         }
     }
-}
-
-// Финансовая транзакция
-#[derive(Debug)]
-pub struct Transaction {
-    pub tx_id: u64,
-    pub tx_type: TransactionType,
-    pub from_user_id: u64,
-    pub to_user_id: u64,
-    pub amount: i64,
-    pub timestamp: u64,
-    pub status: TransactionStatus,
-    pub description: String,
 }
