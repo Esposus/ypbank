@@ -7,7 +7,7 @@ pub struct CsvFormat;
 impl CsvFormat {
     /// Парсит строку CSV
     fn parse_csv_line(line: &str) -> ParseResult<Transaction> {
-        let parts: Vec<&str> = line.split(",").collect();
+        let parts: Vec<&str> = line.split(',').collect();
         if parts.len() != 8 {
             return Err(ParseError::InvalidFormat(
                 "Неверное количество полей в CSV".to_string(),
@@ -76,7 +76,7 @@ impl super::Format for CsvFormat {
     }
 
     fn write_to<W: Write>(&self, mut writer: W, transactions: &[Transaction]) -> ParseResult<()> {
-        write!(
+        writeln!(
             writer,
             "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION"
         )?;
@@ -84,6 +84,52 @@ impl super::Format for CsvFormat {
         for transaction in transactions {
             writeln!(writer, "{}", Self::format_transaction(transaction))?;
         }
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Format;
+    use std::io::Cursor;
+
+    #[test]
+    fn test_csv_roundtrip() -> ParseResult<()> {
+        let transactions = vec![
+            Transaction {
+                tx_id: 1001,
+                tx_type: TransactionType::Deposit,
+                from_user_id: 0,
+                to_user_id: 501,
+                amount: 50_000,
+                timestamp: 1672531200000,
+                status: TransactionStatus::Success,
+                description: "Initial account funding".to_string(),
+            },
+            Transaction {
+                tx_id: 1002,
+                tx_type: TransactionType::Transfer,
+                from_user_id: 501,
+                to_user_id: 502,
+                amount: 15_000,
+                timestamp: 1672534800000,
+                status: TransactionStatus::Failure,
+                description: "Payment for services".to_string(),
+            },
+        ];
+
+        let format = CsvFormat;
+        let mut buffer = Vec::new();
+
+        format.write_to(&mut buffer, &transactions)?;
+
+        let result = format.read_from(Cursor::new(buffer))?;
+
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0], transactions[0]);
+        assert_eq!(result[1], transactions[1]);
 
         Ok(())
     }
