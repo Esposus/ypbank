@@ -1,3 +1,4 @@
+use crate::error::ParseError;
 use std::fmt;
 
 // Тип финансовой транзакции
