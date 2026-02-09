@@ -1,7 +1,7 @@
 use crate::error::ParseError;
 use std::fmt;
 
-// Финансовая транзакция
+/// Финансовая транзакция
 #[derive(Debug)]
 pub struct Transaction {
     pub tx_id: u64,
@@ -14,7 +14,7 @@ pub struct Transaction {
     pub description: String,
 }
 
-// Тип финансовой транзакции
+/// Тип финансовой транзакции
 #[derive(Debug)]
 pub enum TransactionType {
     Deposit,
@@ -68,7 +68,7 @@ impl From<TransactionType> for u8 {
     }
 }
 
-// Статус транзакции
+/// Статус транзакции
 #[derive(Debug)]
 pub enum TransactionStatus {
     Success,

@@ -1,9 +1,9 @@
 use thiserror::Error;
 
-// Тип результата для операций парсинга
+/// Тип результата для операций парсинга
 pub type ParseResult<T> = std::result::Result<T, ParseError>;
 
-// Ошибка парсинга финансовых данных
+/// Ошибка парсинга финансовых данных
 #[derive(Error, Debug)]
 pub enum ParseError {
     #[error("IO ошибка: {0}")]
