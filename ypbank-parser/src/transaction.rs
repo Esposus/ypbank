@@ -15,7 +15,7 @@ pub struct Transaction {
 }
 
 /// Тип финансовой транзакции
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TransactionType {
     Deposit,
     Transfer,
@@ -69,7 +69,7 @@ impl From<TransactionType> for u8 {
 }
 
 /// Статус транзакции
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TransactionStatus {
     Success,
     Failure,
