@@ -4,5 +4,5 @@ mod transaction;
 
 
 pub use error::{ParseError, ParseResult};
-pub use formats::Format;
+pub use formats::{BinaryFormat, CsvFormat, TextFormat, Format};
 pub use transaction::{Transaction, TransactionType, TransactionStatus};

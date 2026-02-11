@@ -2,6 +2,10 @@ mod binary;
 mod csv;
 mod text;
 
+pub use binary::BinaryFormat;
+pub use csv::CsvFormat;
+pub use text::TextFormat;
+
 use crate::{ParseResult, Transaction};
 use std::io::{Read, Write};
 
