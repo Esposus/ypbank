@@ -51,7 +51,7 @@ impl CsvFormat {
     }
 }
 
-impl super::Format for CsvFormat {
+impl super::FormatParser for CsvFormat {
     fn read_from<R: Read>(&self, reader: R) -> ParseResult<Vec<Transaction>> {
         let mut transactions = Vec::new();
         let buf_reader = BufReader::new(reader);
@@ -92,7 +92,7 @@ impl super::Format for CsvFormat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Format;
+    use crate::formats::FormatParser;
     use std::io::Cursor;
 
     #[test]

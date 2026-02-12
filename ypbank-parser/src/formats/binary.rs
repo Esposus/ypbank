@@ -1,7 +1,6 @@
 use crate::{ParseError, ParseResult, Transaction, TransactionStatus, TransactionType};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{Read, Write};
-
 const MAGIC: [u8; 4] = [0x59, 0x50, 0x42, 0x4E];
 
 ///Парсер для бинарного формата YPBankBin
@@ -72,7 +71,7 @@ impl BinaryFormat {
     }
 }
 
-impl super::Format for BinaryFormat {
+impl super::FormatParser for BinaryFormat {
     fn read_from<R: Read>(&self, mut reader: R) -> ParseResult<Vec<Transaction>> {
         let mut transactions = Vec::new();
 
@@ -95,7 +94,7 @@ impl super::Format for BinaryFormat {
 mod tests {
     use super::*;
     use crate::error::ParseResult;
-    use crate::formats::Format;
+    use crate::formats::FormatParser;
     use crate::{Transaction, TransactionStatus, TransactionType};
     use std::io::Cursor;
 
