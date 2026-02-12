@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         if transactions1.len() != transactions2.len() {
             println!(
-                "Разное количество записей: {} и {} для первой и второй транзакции соответственно.",
+                "Количество записей: {} и {}.",
                 transactions1.len(),
                 transactions2.len()
             );
