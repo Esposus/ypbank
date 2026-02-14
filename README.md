@@ -51,11 +51,14 @@ cargo run --bin ypbank-compare -- \
   --format1 binary \
   --file2 transactions.csv \
   --format2 csv
-
+```
 # Успешное сравнение:
-# Различное количество записей для 'transactions.bin' и 'transactions.csv'.
+```text
+Различное количество записей для 'transactions.bin' и 'transactions.csv'.
+```
 
 # При различиях:
-# 'transactions.bin' and 'transactions.csv' различаются.
-# Количество записей: 5 и 4
+```text
+'transactions.bin' and 'transactions.csv' различаются.
+Количество записей: 5 и 4
 ```
