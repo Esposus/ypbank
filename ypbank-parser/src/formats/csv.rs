@@ -1,6 +1,8 @@
 use crate::{ParseError, ParseResult, Transaction, TransactionStatus, TransactionType};
 use std::io::{BufRead, BufReader, Read, Write};
 
+const EXPECTED_HEADER: &str = "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION";
+
 /// Парсер для CSV формата YPBankCsv
 pub struct CsvFormat;
 
@@ -55,10 +57,15 @@ impl super::FormatParser for CsvFormat {
     fn read_from<R: Read>(&self, reader: R) -> ParseResult<Vec<Transaction>> {
         let mut transactions = Vec::new();
         let buf_reader = BufReader::new(reader);
-
         let mut lines = buf_reader.lines();
-        if lines.next().is_none() {
-            return Ok(transactions);
+
+        if let Some(header_line) = lines.next() {
+            let header = header_line?;
+            if header.trim() != EXPECTED_HEADER {
+                return Err(ParseError::InvalidFormat("Неверный формат заголовка CSV".to_string()));
+            }
+        } else {
+            return Err(ParseError::InvalidFormat("Отсутствует заголовок CSV".to_string()));
         }
 
         for line in lines {
@@ -76,10 +83,7 @@ impl super::FormatParser for CsvFormat {
     }
 
     fn write_to<W: Write>(&self, mut writer: W, transactions: &[Transaction]) -> ParseResult<()> {
-        writeln!(
-            writer,
-            "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION"
-        )?;
+        writeln!(writer, "{}", EXPECTED_HEADER)?;
 
         for transaction in transactions {
             writeln!(writer, "{}", Self::format_transaction(transaction))?;
@@ -132,5 +136,42 @@ mod tests {
         assert_eq!(result[1], transactions[1]);
 
         Ok(())
+    }
+    #[test]
+    fn test_csv_missing_header() {
+        let data = "1001,DEPOSIT,0,501,50000,1672531200000,SUCCESS,\"test\"\n";
+        let format = CsvFormat;
+        let result = format.read_from(Cursor::new(data));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_csv_invalid_number() {
+        let data = "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION\n\
+                    abc,DEPOSIT,0,501,50000,1672531200000,SUCCESS,\"test\"\n";
+        let format = CsvFormat;
+        let result = format.read_from(Cursor::new(data));
+        assert!(matches!(result, Err(ParseError::ParseInt(_))));
+    }
+
+    #[test]
+    fn test_csv_invalid_enum() {
+        let data = "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION\n\
+                    1001,INVALID,0,501,50000,1672531200000,SUCCESS,\"test\"\n";
+        let format = CsvFormat;
+        let result = format.read_from(Cursor::new(data));
+        assert!(matches!(result, Err(ParseError::InvalidTransactionType(_))));
+    }
+
+    #[test]
+    fn test_csv_empty_lines() {
+        let data = "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION\n\
+                    \n\
+                    1001,DEPOSIT,0,501,50000,1672531200000,SUCCESS,\"test\"\n\
+                    \n";
+        let format = CsvFormat;
+        let txs = format.read_from(Cursor::new(data)).unwrap();
+        assert_eq!(txs.len(), 1);
+        assert_eq!(txs[0].tx_id, 1001);
     }
 }

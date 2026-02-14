@@ -8,9 +8,15 @@ pub struct BinaryFormat;
 
 impl BinaryFormat {
     /// Читает одну транзакцию из бинарного формата
-    fn read_transaction<R: Read>(reader: &mut R) -> ParseResult<Transaction> {
+    fn read_transaction<R: Read>(reader: &mut R) -> ParseResult<Option<Transaction>> {
         let mut magic = [0u8; 4];
-        reader.read_exact(&mut magic)?;
+
+        match reader.read_exact(&mut magic) {
+            Ok(()) => (),
+            Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => return Ok(None),
+            Err(e) => return Err(e.into()),
+        }
+
         if magic != MAGIC {
             return Err(ParseError::InvalidMagic);
         }
@@ -32,7 +38,7 @@ impl BinaryFormat {
         reader.read_exact(&mut description_bytes)?;
         let description = String::from_utf8(description_bytes)?;
 
-        Ok(Transaction {
+        Ok(Some(Transaction {
             tx_id,
             tx_type,
             from_user_id,
@@ -41,7 +47,7 @@ impl BinaryFormat {
             timestamp,
             status,
             description,
-        })
+        }))
     }
 
     /// Записывает одну транзакцию в бинарном формате
@@ -74,9 +80,12 @@ impl BinaryFormat {
 impl super::FormatParser for BinaryFormat {
     fn read_from<R: Read>(&self, mut reader: R) -> ParseResult<Vec<Transaction>> {
         let mut transactions = Vec::new();
-
-        while let Ok(transaction) = Self::read_transaction(&mut reader) {
-            transactions.push(transaction);
+        loop {
+            match Self::read_transaction(&mut reader) {
+                Ok(Some(transaction)) => transactions.push(transaction),
+                Ok(None) => break,
+                Err(e) => return Err(e),
+            }
         }
 
         Ok(transactions)
@@ -122,5 +131,64 @@ mod tests {
         assert_eq!(result[0], transaction);
 
         Ok(())
+    }
+
+    #[test]
+    fn test_binary_invalid_magic() {
+        let invalid_data = vec![0x00, 0x00, 0x00, 0x00];
+        let format = BinaryFormat;
+        let result = format.read_from(Cursor::new(invalid_data));
+        assert!(matches!(result, Err(ParseError::InvalidMagic)));
+    }
+
+    #[test]
+    fn test_binary_truncated_record() {
+        let mut buffer = Vec::new();
+        let format = BinaryFormat;
+        let tx = Transaction {
+            tx_id: 1,
+            tx_type: TransactionType::Deposit,
+            from_user_id: 0,
+            to_user_id: 2,
+            amount: 100,
+            timestamp: 1000,
+            status: TransactionStatus::Success,
+            description: "test".to_string(),
+        };
+        format.write_to(&mut buffer, &[tx]).unwrap();
+        buffer.truncate(buffer.len() - 5);
+        let result = format.read_from(Cursor::new(buffer));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_binary_multiple_transactions() {
+        let txs = vec![
+            Transaction {
+                tx_id: 1,
+                tx_type: TransactionType::Deposit,
+                from_user_id: 0,
+                to_user_id: 2,
+                amount: 100,
+                timestamp: 1000,
+                status: TransactionStatus::Success,
+                description: "first".to_string(),
+            },
+            Transaction {
+                tx_id: 2,
+                tx_type: TransactionType::Transfer,
+                from_user_id: 2,
+                to_user_id: 3,
+                amount: 50,
+                timestamp: 2000,
+                status: TransactionStatus::Pending,
+                description: "".to_string(),
+            },
+        ];
+        let format = BinaryFormat;
+        let mut buffer = Vec::new();
+        format.write_to(&mut buffer, &txs).unwrap();
+        let read_txs = format.read_from(Cursor::new(buffer)).unwrap();
+        assert_eq!(read_txs, txs);
     }
 }

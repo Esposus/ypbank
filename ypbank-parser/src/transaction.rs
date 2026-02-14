@@ -121,3 +121,33 @@ impl From<TransactionStatus> for u8 {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_transaction_type_from_str() {
+        assert_eq!(TransactionType::try_from("DEPOSIT").unwrap(), TransactionType::Deposit);
+        assert_eq!(TransactionType::try_from("TRANSFER").unwrap(), TransactionType::Transfer);
+        assert_eq!(TransactionType::try_from("WITHDRAWAL").unwrap(), TransactionType::Withdrawal);
+        assert!(TransactionType::try_from("INVALID").is_err());
+    }
+
+    #[test]
+    fn test_transaction_type_from_u8() {
+        assert_eq!(TransactionType::try_from(0u8).unwrap(), TransactionType::Deposit);
+        assert_eq!(TransactionType::try_from(1u8).unwrap(), TransactionType::Transfer);
+        assert_eq!(TransactionType::try_from(2u8).unwrap(), TransactionType::Withdrawal);
+        assert!(TransactionType::try_from(3u8).is_err());
+    }
+
+    #[test]
+    fn test_transaction_type_into_u8() {
+        assert_eq!(Into::<u8>::into(TransactionType::Deposit), 0u8);
+        assert_eq!(Into::<u8>::into(TransactionType::Transfer), 1u8);
+        assert_eq!(Into::<u8>::into(TransactionType::Withdrawal), 2u8);
+    }
+
+    // Аналогично для TransactionStatus
+}

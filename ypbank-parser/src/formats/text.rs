@@ -134,4 +134,83 @@ mod tests {
 
         Ok(())
     }
+    #[test]
+    fn test_text_multiple_records_with_comments() {
+        let data = "\
+# Record 1
+TX_ID: 1
+TX_TYPE: DEPOSIT
+FROM_USER_ID: 0
+TO_USER_ID: 100
+AMOUNT: 1000
+TIMESTAMP: 1000
+STATUS: SUCCESS
+DESCRIPTION: \"first\"
+
+# Record 2
+TX_ID: 2
+TX_TYPE: WITHDRAWAL
+FROM_USER_ID: 100
+TO_USER_ID: 0
+AMOUNT: 200
+TIMESTAMP: 2000
+STATUS: PENDING
+DESCRIPTION: \"\"
+";
+        let format = TextFormat;
+        let txs = format.read_from(Cursor::new(data)).unwrap();
+        assert_eq!(txs.len(), 2);
+        assert_eq!(txs[0].tx_id, 1);
+        assert_eq!(txs[1].description, "");
+    }
+
+    #[test]
+    fn test_text_missing_field() {
+        let data = "\
+TX_ID: 1
+TX_TYPE: DEPOSIT
+FROM_USER_ID: 0
+TO_USER_ID: 100
+AMOUNT: 1000
+TIMESTAMP: 1000
+STATUS: SUCCESS
+";
+        let format = TextFormat;
+        let result = format.read_from(Cursor::new(data));
+        assert!(matches!(result, Err(ParseError::MissingField(field)) if field == "DESCRIPTION"));
+    }
+
+    #[test]
+    fn test_text_invalid_field_order() {
+        let data = "\
+TX_TYPE: DEPOSIT
+TX_ID: 1
+FROM_USER_ID: 0
+TO_USER_ID: 100
+AMOUNT: 1000
+TIMESTAMP: 1000
+STATUS: SUCCESS
+DESCRIPTION: \"test\"
+";
+        let format = TextFormat;
+        let txs = format.read_from(Cursor::new(data)).unwrap();
+        assert_eq!(txs.len(), 1);
+    }
+
+    #[test]
+    fn test_text_invalid_enum() {
+        let data = "\
+TX_ID: 1
+TX_TYPE: INVALID
+FROM_USER_ID: 0
+TO_USER_ID: 100
+AMOUNT: 1000
+TIMESTAMP: 1000
+STATUS: SUCCESS
+DESCRIPTION: \"test\"
+";
+        let format = TextFormat;
+        let result = format.read_from(Cursor::new(data));
+        assert!(matches!(result, Err(ParseError::InvalidTransactionType(_))));
+    }
 }
