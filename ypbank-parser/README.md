@@ -5,7 +5,7 @@
 ## Возможности
 
 - Поддержка трёх форматов: CSV, текстовый (key-value), бинарный.
-- Единый интерфейс через перечисление `Format`.
+- Единый интерфейс через трейт`Format`.
 - Все операции чтения/записи работают с любыми типами, реализующими `std::io::Read` и `std::io::Write`.
 - Полная обработка ошибок без `unwrap()`.
 - Модульные тесты для каждого формата.
@@ -20,30 +20,39 @@ ypbank-parser = { path = "../ypbank-parser" }
 ```
 
 ## Использование
-```rust
-use ypbank_parser::{Format, Transaction};
-use std::fs::File;
-use std::io::BufReader;
 
 // Чтение CSV-файла
+
+```rust
 let file = File::open("transactions.csv")?;
 let reader = BufReader::new(file);
-let transactions = Format::Csv.read_from(reader)?;
+let transactions = CsvFormat.read_from(reader)?;
 
-// Обработка
-for tx in &transactions {
-    println!("{}: {} {}", tx.tx_id, tx.tx_type, tx.amount);
+// Обработка транзакций
+for transaction in &transactions {
+println!("{}: {} {}", transaction.tx_id, transaction.tx_type, transaction.amount);
 }
 
 // Запись в бинарный формат
 let output = File::create("transactions.bin")?;
-Format::Binary.write_to(output, &transactions)?;
+BinaryFormat.write_to(output, &transactions)?;
+
+// Также можно работать с другими форматами
+let text_file = File::open("transactions.txt")?;
+let text_reader = BufReader::new(text_file);
+let text_transactions = TextFormat.read_from(text_reader)?;
+
+let bin_file = File::open("transactions.bin")?;
+let bin_reader = BufReader::new(bin_file);
+let bin_transactions = BinaryFormat.read_from(bin_reader)?;
 ```
+
 ## Структуры данных
 
 ###Transaction
 
 Основная структура, представляющая финансовую транзакцию:
+
 ```rust
 pub struct Transaction {
     pub tx_id: u64,
@@ -58,6 +67,7 @@ pub struct Transaction {
 ```
 
 ## Перечисления
+
 `TransactionType`: `Deposit`, `Transfer`, `Withdrawal`
 
 `TransactionStatus`: `Success`, `Failure`, `Pending`
@@ -67,6 +77,11 @@ pub struct Transaction {
 ## Тестирование
 
 Запустите тесты:
+
 ```bash
 cargo test
 ```
+
+## Лицензия
+
+MIT

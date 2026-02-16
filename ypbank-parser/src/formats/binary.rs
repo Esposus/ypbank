@@ -1,3 +1,4 @@
+use super::Format;
 use crate::{ParseError, ParseResult, Transaction, TransactionStatus, TransactionType};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{Read, Write};
@@ -77,7 +78,7 @@ impl BinaryFormat {
     }
 }
 
-impl super::FormatParser for BinaryFormat {
+impl Format for BinaryFormat {
     fn read_from<R: Read>(&self, mut reader: R) -> ParseResult<Vec<Transaction>> {
         let mut transactions = Vec::new();
         loop {
@@ -103,7 +104,7 @@ impl super::FormatParser for BinaryFormat {
 mod tests {
     use super::*;
     use crate::error::ParseResult;
-    use crate::formats::FormatParser;
+    use crate::formats::Format;
     use crate::{Transaction, TransactionStatus, TransactionType};
     use std::io::Cursor;
 

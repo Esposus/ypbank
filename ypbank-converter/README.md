@@ -11,21 +11,24 @@ git clone git@github.com:Esposus/ypbank.git
 cd ypbank
 cargo build --release
 ```
+
 Бинарный файл будет находиться в `target/release/ypbank-converter`.
 
 ## Использование
+
 ```bash
 ypbank-converter --input <INPUT_FILE> --input-format <FORMAT> --output-format <FORMAT>
 ```
 
 ## Аргументы
 
-`-i`, `--input`	Путь к входному файлу
-`--input-format`	Формат входного файла: `binary`, `csv`, `text`
-`--output-format`	Желаемый формат выходных данных: `binary`, `csv`, `text`
+`-i`, `--input` Путь к входному файлу
+`--input-format` Формат входного файла: `binary`, `csv`, `text`
+`--output-format` Желаемый формат выходных данных: `binary`, `csv`, `text`
 Результат выводится в stdout. Для сохранения в файл используйте перенаправление `>`.
 
 ## Примеры
+
 ### Конвертация CSV в бинарный формат
 
 ```bash
@@ -35,6 +38,7 @@ ypbank-converter \
   --output-format binary \
   > transactions.bin
 ```
+
 ### Конвертация бинарного формата в текстовый
 
 ```bash

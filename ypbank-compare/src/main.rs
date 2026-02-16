@@ -1,7 +1,7 @@
 use clap::{Parser, ValueEnum};
 use std::fs::File;
 use std::io::BufReader;
-use ypbank_parser::Format;
+use ypbank_parser::{BinaryFormat, CsvFormat, Format, TextFormat, Transaction};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -25,24 +25,17 @@ enum FormatType {
     Text,
 }
 
-impl From<FormatType> for Format {
-    fn from(f: FormatType) -> Self {
-        match f {
-            FormatType::Binary => Format::Binary,
-            FormatType::Csv => Format::Csv,
-            FormatType::Text => Format::Text,
-        }
-    }
-}
-
 fn read_transactions(
     filename: &str,
     format_type: FormatType,
-) -> Result<Vec<ypbank_parser::Transaction>, Box<dyn std::error::Error>> {
+) -> Result<Vec<Transaction>, Box<dyn std::error::Error>> {
     let file = File::open(filename)?;
     let reader = BufReader::new(file);
-    let format: Format = format_type.into();
-    let transactions = format.read_from(reader)?;
+    let transactions = match format_type {
+        FormatType::Binary => BinaryFormat.read_from(reader)?,
+        FormatType::Csv => CsvFormat.read_from(reader)?,
+        FormatType::Text => TextFormat.read_from(reader)?,
+    };
     Ok(transactions)
 }
 

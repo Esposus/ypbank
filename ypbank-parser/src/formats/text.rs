@@ -1,3 +1,4 @@
+use super::Format;
 use crate::{ParseError, ParseResult, Transaction, TransactionStatus, TransactionType};
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Read, Write};
@@ -53,7 +54,7 @@ impl TextFormat {
     }
 }
 
-impl super::FormatParser for TextFormat {
+impl Format for TextFormat {
     fn read_from<R: Read>(&self, reader: R) -> ParseResult<Vec<Transaction>> {
         let mut transactions = Vec::new();
         let buf_reader = BufReader::new(reader);
@@ -107,7 +108,7 @@ impl super::FormatParser for TextFormat {
 mod tests {
     use super::*;
     use crate::ParseResult;
-    use crate::formats::FormatParser;
+    use crate::formats::Format;
     use ::std::io::Cursor;
 
     #[test]

@@ -1,7 +1,7 @@
 use clap::{Parser, ValueEnum};
 use std::fs::File;
 use std::io::{self, BufReader, BufWriter};
-use ypbank_parser::Format;
+use ypbank_parser::{BinaryFormat, CsvFormat, Format, TextFormat};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about = "Конвертер финансовых данных между форматами")]
@@ -26,28 +26,25 @@ enum FormatType {
     Text,
 }
 
-impl From<FormatType> for Format {
-    fn from(f: FormatType) -> Self {
-        match f {
-            FormatType::Binary => Format::Binary,
-            FormatType::Csv => Format::Csv,
-            FormatType::Text => Format::Text,
-        }
-    }
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     let input_file = File::open(&args.input)?;
     let reader = BufReader::new(input_file);
-    let input_format: Format = args.input_format.into();
-    let transactions = input_format.read_from(reader)?;
 
-    let output_format: Format = args.output_format.into();
+    let transactions = match args.input_format {
+        FormatType::Binary => BinaryFormat.read_from(reader)?,
+        FormatType::Csv => CsvFormat.read_from(reader)?,
+        FormatType::Text => TextFormat.read_from(reader)?,
+    };
+
     let stdout = io::stdout();
     let writer = BufWriter::new(stdout);
-    output_format.write_to(writer, &transactions)?;
+    match args.output_format {
+        FormatType::Binary => BinaryFormat.write_to(writer, &transactions)?,
+        FormatType::Csv => CsvFormat.write_to(writer, &transactions)?,
+        FormatType::Text => TextFormat.write_to(writer, &transactions)?,
+    }
 
     Ok(())
 }

@@ -1,7 +1,9 @@
+use super::Format;
 use crate::{ParseError, ParseResult, Transaction, TransactionStatus, TransactionType};
 use std::io::{BufRead, BufReader, Read, Write};
 
-const EXPECTED_HEADER: &str = "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION";
+const EXPECTED_HEADER: &str =
+    "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION";
 
 /// Парсер для CSV формата YPBankCsv
 pub struct CsvFormat;
@@ -53,7 +55,7 @@ impl CsvFormat {
     }
 }
 
-impl super::FormatParser for CsvFormat {
+impl Format for CsvFormat {
     fn read_from<R: Read>(&self, reader: R) -> ParseResult<Vec<Transaction>> {
         let mut transactions = Vec::new();
         let buf_reader = BufReader::new(reader);
@@ -62,10 +64,14 @@ impl super::FormatParser for CsvFormat {
         if let Some(header_line) = lines.next() {
             let header = header_line?;
             if header.trim() != EXPECTED_HEADER {
-                return Err(ParseError::InvalidFormat("Неверный формат заголовка CSV".to_string()));
+                return Err(ParseError::InvalidFormat(
+                    "Неверный формат заголовка CSV".to_string(),
+                ));
             }
         } else {
-            return Err(ParseError::InvalidFormat("Отсутствует заголовок CSV".to_string()));
+            return Err(ParseError::InvalidFormat(
+                "Отсутствует заголовок CSV".to_string(),
+            ));
         }
 
         for line in lines {
@@ -96,7 +102,7 @@ impl super::FormatParser for CsvFormat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::formats::FormatParser;
+    use crate::formats::Format;
     use std::io::Cursor;
 
     #[test]
