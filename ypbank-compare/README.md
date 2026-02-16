@@ -59,4 +59,4 @@ ypbank-compare \
 
 ## Лицензия
 
-MIT
+The MIT License (MIT)

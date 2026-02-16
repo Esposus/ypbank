@@ -68,4 +68,4 @@ cargo run --bin ypbank-compare -- \
 
 ## Лицензия
 
-MIT
+The MIT License (MIT)

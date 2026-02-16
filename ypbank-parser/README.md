@@ -84,4 +84,4 @@ cargo test
 
 ## Лицензия
 
-MIT
+The MIT License (MIT)
